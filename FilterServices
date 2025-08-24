@@ -1,16 +1,4 @@
-package com.example.filtermicroservice.service;
-
-import com.example.filtermicroservice.model.Product;
-import com.example.filtermicroservice.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+// Services
 @Service
 public class ProductService {
 
@@ -54,10 +42,58 @@ public class ProductService {
 	public List<Product> getProduct() {
 	
 		return repository.findAll();
-	}
-
-	
+	}	
 
 }
 
+// Contoller
 
+@RestController
+@RequestMapping
+public class ProductController {
+	@Autowired
+	private ProductService productService;
+	@PostMapping("/add")
+	public ResponseEntity<Product> createProducts(@RequestBody Product product) {
+	    return ResponseEntity.ok(productService.saveProduct(product));
+	}
+	@GetMapping("/get")
+	public ResponseEntity<List<Product>> getyProducts() {
+	    return ResponseEntity.ok(productService.getProduct());
+	}
+
+
+	@GetMapping("/filter/price/{initial_range}/{final_range}")
+	public ResponseEntity<List<Product>> getProoductInRange(@PathVariable Integer final_range ,@PathVariable Integer initial_range){
+		List<Product> list=productService.filterByPriceRange(initial_range,final_range);
+		if(list.isEmpty()) {
+			return ResponseEntity.status(400).build();
+		}
+		return ResponseEntity.status(200).body(list);
+		
+	}
+	@GetMapping("/filter/price/{initial_range}/{final_range}/bar")
+	public ResponseEntity<List<Map<String, String>>> getProoductInRangeBar(@PathVariable Integer final_range ,@PathVariable Integer initial_range){
+		List<Map<String, String>> list=productService.filterByPriceRangeBar(initial_range,final_range);
+		if(list.isEmpty()) {
+			return ResponseEntity.status(400).build();
+		}
+		return ResponseEntity.status(200).body(list);
+		
+	}
+
+	@GetMapping("/sort/price")
+	public ResponseEntity<List<Product>> getSortedProductsWithDetails() {
+	    return ResponseEntity.ok(productService.sortByPrice());
+	}
+	@GetMapping("/sort/price/bar")
+	public ResponseEntity<List<Map<String, String>>> getSortedProductsWithDetailsBar() {
+	    return ResponseEntity.ok(productService.sortByPriceBar());
+	}
+
+	
+}
+
+// Repository
+public interface ProductRepository extends JpaRepository<Product, String> {
+}
