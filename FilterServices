@@ -1,0 +1,63 @@
+package com.example.filtermicroservice.service;
+
+import com.example.filtermicroservice.model.Product;
+import com.example.filtermicroservice.repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Service
+public class ProductService {
+
+	@Autowired
+	private ProductRepository repository;
+	
+	public List<Product> filterByPriceRange(Integer min, Integer max) {
+		return repository.findAll().stream().filter(p -> p.getPrice() >= min && p.getPrice() <= max)
+				.collect(Collectors.toList());
+	}
+	public List<Map<String, String>> filterByPriceRangeBar(Integer min, Integer max) {
+		return repository.findAll().stream().filter(p -> p.getPrice() >= min && p.getPrice() <= max)
+				.map(p->{
+					Map<String, String> m= new HashMap<>();
+					m.put("barcode",p.getBarcode());
+					return m;
+				}
+						)
+				.collect(Collectors.toList());
+	}
+	public List<Map<String, String>> sortByPriceBar() {
+		return repository.findAll().stream().sorted(Comparator.comparing(Product::getPrice)).map(
+				p->{
+					Map<String, String> m= new HashMap<>();
+					m.put("barcode",p.getBarcode());
+					return m;
+					
+				})
+				.collect(Collectors.toList());
+	}
+	
+	public List<Product> sortByPrice() {
+		return repository.findAll().stream().sorted(Comparator.comparingInt(Product::getPrice))
+				.collect(Collectors.toList());
+	}
+	
+	public Product saveProduct(Product product) {
+		return repository.save(product);
+	}
+
+	public List<Product> getProduct() {
+	
+		return repository.findAll();
+	}
+
+	
+
+}
+
+
